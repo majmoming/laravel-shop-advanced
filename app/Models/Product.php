@@ -16,6 +16,7 @@ class Product extends Model
         'sold_count',
         'review_count',
         'price',
+        'category_id',
     ];
 
     protected $casts    = [
@@ -26,6 +27,11 @@ class Product extends Model
     public function skus()
     {
         return $this->hasMany(ProductSku::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function getImageUrlAttribute()
