@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
+    const TYPE_SECKILL = 'seckill';
     protected $fillable = [
         'title',
         'description',
@@ -17,6 +18,10 @@ class Product extends Model
         'review_count',
         'price',
         'category_id',
+    ];
+
+    public static $typeMap = [
+        self::TYPE_SECKILL => '秒杀商品',
     ];
 
     protected $casts    = [
@@ -32,6 +37,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function seckill()
+    {
+        return $this->hasOne(SeckillProduct::class);
     }
 
     public function getImageUrlAttribute()
