@@ -8,6 +8,14 @@ use Illuminate\Support\Str;
 class Product extends Model
 {
     const TYPE_SECKILL = 'seckill';
+    const TYPE_NORMAL = 'normal';
+    const TYPE_CROWDFUNDING = 'crowdfunding';
+    public static $typeMap = [
+        self::TYPE_NORMAL => '普通商品',
+        self::TYPE_CROWDFUNDING => '众筹商品',
+        self::TYPE_SECKILL => '秒杀商品',
+    ];
+
     protected $fillable = [
         'title',
         'description',
@@ -18,13 +26,15 @@ class Product extends Model
         'review_count',
         'price',
         'category_id',
+        'type',
     ];
 
-    public static $typeMap = [
-        self::TYPE_SECKILL => '秒杀商品',
-    ];
+    public function crowdfunding()
+    {
+        return $this->hasOne(CrowdfundingProduct::class);
+    }
 
-    protected $casts    = [
+    protected $casts = [
         'on_sale' => 'boolean', // on_sale 是一个布尔类型的字段
     ];
 
