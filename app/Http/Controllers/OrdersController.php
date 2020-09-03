@@ -154,17 +154,4 @@ class OrdersController extends Controller
 
         return $orderService->crowdfunding($user, $address, $sku, $amount);
     }
-
-
-    public function ship(Order $order, Request $request)
-    {
-        if ($order->ship_status !== Order::SHIP_STATUS_PENDING) {
-            throw new InvalidRequestException('该订单已发货');
-        }
-        // 众筹订单只有在众筹成功之后发货
-        if ($order->type === Order::TYPE_CROWDFUNDING &&
-            $order->items[0]->product->crowdfunding->status !== CrowdfundingProduct::STATUS_SUCCESS) {
-            throw new InvalidRequestException('众筹订单只能在众筹成功之后发货');
-        }
-    }
 }
