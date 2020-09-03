@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Requests\CrowdFundingOrderRequest;
 use App\Models\ProductSku;
+use App\Models\CrowdfundingProduct;
 
 class OrdersController extends Controller
 {
@@ -33,9 +34,9 @@ class OrdersController extends Controller
 
     public function store(OrderRequest $request, OrderService $orderService)
     {
-        $user    = $request->user();
+        $user = $request->user();
         $address = UserAddress::find($request->input('address_id'));
-        $coupon  = null;
+        $coupon = null;
 
         // 如果用户提交了优惠码
         if ($code = $request->input('coupon_code')) {
@@ -102,8 +103,8 @@ class OrdersController extends Controller
                 $orderItem = $order->items()->find($review['id']);
                 // 保存评分和评价
                 $orderItem->update([
-                    'rating'      => $review['rating'],
-                    'review'      => $review['review'],
+                    'rating' => $review['rating'],
+                    'review' => $review['review'],
                     'reviewed_at' => Carbon::now(),
                 ]);
             }
@@ -123,17 +124,21 @@ class OrdersController extends Controller
         if (!$order->paid_at) {
             throw new InvalidRequestException('该订单未支付，不可退款');
         }
+        // 众筹订单不允许申请退款
+        if ($order->type === Order::TYPE_CROWDFUNDING) {
+            throw new InvalidRequestException('众筹订单不支持退款');
+        }
         // 判断订单退款状态是否正确
         if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
             throw new InvalidRequestException('该订单已经申请过退款，请勿重复申请');
         }
         // 将用户输入的退款理由放到订单的 extra 字段中
-        $extra                  = $order->extra ?: [];
+        $extra = $order->extra ?: [];
         $extra['refund_reason'] = $request->input('reason');
         // 将订单退款状态改为已申请退款
         $order->update([
             'refund_status' => Order::REFUND_STATUS_APPLIED,
-            'extra'         => $extra,
+            'extra' => $extra,
         ]);
 
         return $order;
@@ -142,11 +147,24 @@ class OrdersController extends Controller
     // 创建一个新的方法用于接受众筹商品下单请求
     public function crowdfunding(CrowdFundingOrderRequest $request, OrderService $orderService)
     {
-        $user    = $request->user();
-        $sku     = ProductSku::find($request->input('sku_id'));
+        $user = $request->user();
+        $sku = ProductSku::find($request->input('sku_id'));
         $address = UserAddress::find($request->input('address_id'));
-        $amount  = $request->input('amount');
+        $amount = $request->input('amount');
 
         return $orderService->crowdfunding($user, $address, $sku, $amount);
+    }
+
+
+    public function ship(Order $order, Request $request)
+    {
+        if ($order->ship_status !== Order::SHIP_STATUS_PENDING) {
+            throw new InvalidRequestException('该订单已发货');
+        }
+        // 众筹订单只有在众筹成功之后发货
+        if ($order->type === Order::TYPE_CROWDFUNDING &&
+            $order->items[0]->product->crowdfunding->status !== CrowdfundingProduct::STATUS_SUCCESS) {
+            throw new InvalidRequestException('众筹订单只能在众筹成功之后发货');
+        }
     }
 }
