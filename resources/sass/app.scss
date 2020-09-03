@@ -120,7 +120,6 @@ body {
             }
         }
     }
-    // 替换原有的 .search-form
     .search-form {
         padding: 0 5px 10px;
         .category-breadcrumb {
@@ -140,6 +139,21 @@ body {
             a {
                 text-decoration: none;
                 color: #666;
+            }
+        }
+        .filter {
+            border: 1px red solid;
+            font-size: 12px;
+            padding: 2px 0 2px 2px;
+            .filter-value {
+                color: red;
+            }
+            .remove-filter {
+                text-decoration: none;
+                color: white;
+                font-weight: bold;
+                background: red;
+                padding: 2px;
             }
         }
     }
