@@ -37,11 +37,6 @@ class EventServiceProvider extends ServiceProvider
             SendOrderPaidMail::class,
             UpdateCrowdfundingProductProgress::class,
         ],
-
-        //监听本地sql
-        'Illuminate\Database\Events\QueryExecuted' => [
-            'App\Listeners\QueryListener',
-        ],
     ];
 
     /**
