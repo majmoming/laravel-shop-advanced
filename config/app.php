@@ -136,6 +136,8 @@ return [
 
     'ngrok_url' => env('NGROK_URL'),
 
+    'seckill_order_ttl' => 600,
+
     'providers' => [
 
         /*
